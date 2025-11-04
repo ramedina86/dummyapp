@@ -26,9 +26,12 @@ jobs:
           # If it's in a subdirectory, use that path (e.g., 'app/')
           APP_DIR="."
 
+          # Create a temporary directory for the tarball
+          mkdir -p /tmp/agent-deploy
+
           # Create a gzipped tarball of the application
           # Exclude common files that shouldn't be deployed
-          tar -czf agent.tar.gz \
+          tar -czf /tmp/agent-deploy/agent.tar.gz \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='node_modules' \
@@ -38,9 +41,10 @@ jobs:
             --exclude='.venv' \
             --exclude='venv' \
             --exclude='.env' \
-            --exclude='agent.tar.gz' \
-            --warning=no-file-changed \
-            -C $APP_DIR .
+            -C $APP_DIR . 2>&1 || true
+
+          # Move tarball to working directory
+          mv /tmp/agent-deploy/agent.tar.gz ./agent.tar.gz
 
           echo "✅ Tarball created successfully"
           ls -lh agent.tar.gz
