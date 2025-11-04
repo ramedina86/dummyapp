@@ -1,0 +1,97 @@
+name: Deploy to Agent Pods
+
+on:
+  push:
+    branches:
+      - dev # Trigger when code is pushed to dev branch (PR merge)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment variables
+        run: |
+          echo "AGENT_ID=${{ secrets.AGENT_POD_ID }}" >> $GITHUB_ENV
+          echo "ENV_NAME=dev" >> $GITHUB_ENV
+          echo "ORCHESTRATOR_URL=https://agent-pods-orchestrator.ramiro-medina.workers.dev" >> $GITHUB_ENV
+
+      - name: Create deployment tarball
+        run: |
+          # Navigate to your application directory (adjust path as needed)
+          # If your app is in the repo root, use '.'
+          # If it's in a subdirectory, use that path (e.g., 'app/')
+          APP_DIR="."
+
+          # Create a gzipped tarball of the application
+          tar -czf agent.tar.gz -C $APP_DIR .
+
+          echo "✅ Tarball created successfully"
+          ls -lh agent.tar.gz
+
+      - name: Deploy to Agent Pods
+        env:
+          BASIC_AUTH_SECRET: ${{ secrets.AGENT_PODS_AUTH }}
+        run: |
+          # Upload the tarball to Agent Pods
+          response=$(curl -X POST \
+            "${ORCHESTRATOR_URL}/upload/agent/${AGENT_ID}/env/${ENV_NAME}" \
+            -H "Authorization: Basic ${BASIC_AUTH_SECRET}" \
+            -H "Content-Type: application/gzip" \
+            --data-binary @agent.tar.gz \
+            -w "\n%{http_code}" \
+            -s)
+
+          # Extract HTTP status code
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response: $body"
+          echo "HTTP Status: $http_code"
+
+          # Check if deployment was successful
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed with status $http_code"
+            exit 1
+          fi
+
+      - name: Get preview URL
+        run: |
+          # Fetch the preview URL for the deployed environment
+          preview_url=$(curl -X GET \
+            "${ORCHESTRATOR_URL}/preview/agent/${AGENT_ID}/env/${ENV_NAME}" \
+            -H "Authorization: Basic ${{ secrets.AGENT_PODS_AUTH }}" \
+            -s | jq -r '.url // empty')
+
+          if [ -n "$preview_url" ]; then
+            echo "🚀 Application deployed successfully!"
+            echo "Preview URL: $preview_url"
+            echo "preview_url=$preview_url" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Could not retrieve preview URL"
+          fi
+
+      - name: Clean up
+        if: always()
+        run: |
+          # Remove the tarball
+          rm -f agent.tar.gz
+          echo "🧹 Cleanup complete"
+
+      - name: Comment on PR (optional)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = process.env.PREVIEW_URL || 'Deployment in progress...';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Deployed to Agent Pods (dev)**\n\nPreview URL: ${previewUrl}`
+            });
