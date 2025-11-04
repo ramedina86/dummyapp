@@ -80,17 +80,32 @@ jobs:
       - name: Get preview URL
         run: |
           # Fetch the preview URL for the deployed environment
-          preview_url=$(curl -X GET \
+          response=$(curl -X GET \
             "${ORCHESTRATOR_URL}/preview/agent/${AGENT_ID}/env/${ENV_NAME}" \
             -H "Authorization: Basic ${{ secrets.AGENT_PODS_AUTH }}" \
-            -s | jq -r '.url // empty')
+            -s -w "\n%{http_code}")
 
-          if [ -n "$preview_url" ]; then
-            echo "🚀 Application deployed successfully!"
-            echo "Preview URL: $preview_url"
-            echo "preview_url=$preview_url" >> $GITHUB_OUTPUT
+          # Extract HTTP status code and body
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Preview URL API Response (HTTP $http_code):"
+          echo "$body"
+
+          # Try to parse preview URL if response is successful
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            preview_url=$(echo "$body" | jq -r '.url // empty' 2>/dev/null || echo "")
+            
+            if [ -n "$preview_url" ]; then
+              echo ""
+              echo "🚀 Application deployed successfully!"
+              echo "Preview URL: $preview_url"
+              echo "preview_url=$preview_url" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️ Could not parse preview URL from response"
+            fi
           else
-            echo "⚠️ Could not retrieve preview URL"
+            echo "⚠️ Could not retrieve preview URL (HTTP $http_code)"
           fi
 
       - name: Clean up
