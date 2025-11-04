@@ -27,7 +27,20 @@ jobs:
           APP_DIR="."
 
           # Create a gzipped tarball of the application
-          tar -czf agent.tar.gz -C $APP_DIR .
+          # Exclude common files that shouldn't be deployed
+          tar -czf agent.tar.gz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.pytest_cache' \
+            --exclude='.venv' \
+            --exclude='venv' \
+            --exclude='.env' \
+            --exclude='agent.tar.gz' \
+            --warning=no-file-changed \
+            -C $APP_DIR .
 
           echo "✅ Tarball created successfully"
           ls -lh agent.tar.gz
