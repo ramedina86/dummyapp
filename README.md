@@ -51,6 +51,7 @@ For production deployments on Linux, you can use systemd. See `fastapi.service` 
 ## API Endpoints
 
 - `GET /` - Returns a hello world message
+- `GET /env` - Returns environment variables with sensitive values (e.g. secrets, passwords) masked
 
 ## API Documentation
 
