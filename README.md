@@ -52,6 +52,13 @@ For production deployments on Linux, you can use systemd. See `fastapi.service` 
 
 - `GET /` - Returns a hello world message
 
+### Cat Meme Management
+
+- `GET /memes` - List all cat memes
+- `POST /memes` - Add a new cat meme (body: `{"title": "...", "url": "...", "description": "..."}`)
+- `GET /memes/{id}` - Get a cat meme by ID
+- `DELETE /memes/{id}` - Delete a cat meme
+
 ## API Documentation
 
 Once the server is running, you can access:
