@@ -1,8 +1,37 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
+from contextlib import asynccontextmanager
+import os
 import random
 
-app = FastAPI(title="Cat Memes API", description="A purr-fect API for cat memes 🐱")
+AGENT_PIAZZA_URL = os.getenv("AGENT_PIAZZA_URL", "http://agentpiazza.ramiro-a-medina.workers.dev/api")
+AGENT_PIAZZA_SECRET = os.getenv("AGENT_PIAZZA_SECRET", "")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: report presence to Agent Piazza if configured
+    if AGENT_PIAZZA_SECRET:
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client:
+                r = await client.post(
+                    f"{AGENT_PIAZZA_URL.rstrip('/')}/agents/presence",
+                    headers={
+                        "Authorization": f"Bearer {AGENT_PIAZZA_SECRET}",
+                        "X-Agent-Id": "fastapi-cat-memes",
+                    },
+                )
+                if r.status_code == 200:
+                    print("Agent Piazza: presence reported")
+        except Exception as e:
+            print(f"Agent Piazza: {e}")
+    yield
+    # Shutdown
+    pass
+
+
+app = FastAPI(title="Cat Memes API", description="A purr-fect API for cat memes 🐱", lifespan=lifespan)
 
 # Curated collection of popular cat memes
 CAT_MEMES = [
@@ -65,6 +94,60 @@ CAT_MEMES = [
         "title": "Weekend Cat",
         "url": "https://cataas.com/cat/says/Finally%20Friday?fontSize=50&fontColor=white",
         "caption": "Finally Friday!",
+    },
+    {
+        "id": "deploy-cat",
+        "title": "Deploy Cat",
+        "url": "https://cataas.com/cat/says/Deploy%20to%20prod%20at%204pm%20Friday?fontSize=30&fontColor=white",
+        "caption": "Deploy to prod at 4pm Friday",
+    },
+    {
+        "id": "meeting-cat",
+        "title": "Meeting Cat",
+        "url": "https://cataas.com/cat/says/This%20could%20have%20been%20an%20email?fontSize=30&fontColor=white",
+        "caption": "This could have been an email",
+    },
+    {
+        "id": "merge-cat",
+        "title": "Merge Conflict Cat",
+        "url": "https://cataas.com/cat/says/Resolve%20merge%20conflicts?fontSize=40&fontColor=white",
+        "caption": "Resolve merge conflicts",
+    },
+    {
+        "id": "debug-cat",
+        "title": "Debug Cat",
+        "url": "https://cataas.com/cat/says/Have%20you%20tried%20turning%20it%20off%20and%20on?fontSize=25&fontColor=white",
+        "caption": "Have you tried turning it off and on?",
+    },
+    {
+        "id": "pr-cat",
+        "title": "PR Review Cat",
+        "url": "https://cataas.com/cat/says/LGTM%20%F0%9F%91%8D?fontSize=50&fontColor=white",
+        "caption": "LGTM 👍",
+    },
+    {
+        "id": "standup-cat",
+        "title": "Standup Cat",
+        "url": "https://cataas.com/cat/says/Same%20as%20yesterday?fontSize=45&fontColor=white",
+        "caption": "Same as yesterday",
+    },
+    {
+        "id": "vacation-cat",
+        "title": "Vacation Cat",
+        "url": "https://cataas.com/cat/says/Out%20of%20office?fontSize=50&fontColor=white",
+        "caption": "Out of office",
+    },
+    {
+        "id": "404-cat",
+        "title": "404 Cat",
+        "url": "https://cataas.com/cat/says/404%20Cat%20not%20found?fontSize=40&fontColor=white",
+        "caption": "404 Cat not found",
+    },
+    {
+        "id": "hello-cat",
+        "title": "Hello Cat",
+        "url": "https://cataas.com/cat/says/Hello%20World?fontSize=50&fontColor=white",
+        "caption": "Hello World",
     },
 ]
 
