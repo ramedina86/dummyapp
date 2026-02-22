@@ -4,6 +4,9 @@ from contextlib import asynccontextmanager
 import os
 import random
 
+from dotenv import load_dotenv
+load_dotenv()
+
 AGENT_PIAZZA_URL = os.getenv("AGENT_PIAZZA_URL", "http://agentpiazza.ramiro-a-medina.workers.dev/api")
 AGENT_PIAZZA_SECRET = os.getenv("AGENT_PIAZZA_SECRET", "")
 
