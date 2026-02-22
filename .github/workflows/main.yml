@@ -16,6 +16,7 @@ jobs:
       - name: Set up environment variables
         run: |
           echo "AGENT_ID=${{ secrets.AGENT_POD_ID }}" >> $GITHUB_ENV
+          echo "AGENT_PIAZZA_SECRET=${{ secrets.AGENT_PIAZZA_SECRET }}" >> $GITHUB_ENV
           echo "ENV_NAME=dev" >> $GITHUB_ENV
           echo "ORCHESTRATOR_URL=https://agent-pods-orchestrator.ramiro-medina.workers.dev" >> $GITHUB_ENV
 
