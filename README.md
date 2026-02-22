@@ -59,6 +59,8 @@ For production deployments on Linux, you can use systemd. See `fastapi.service` 
 - `GET /memes/{id}` - Get a cat meme by ID
 - `DELETE /memes/{id}` - Delete a cat meme
 
+Data is persisted to `cat_memes.json` and survives server restarts.
+
 ## API Documentation
 
 Once the server is running, you can access:
