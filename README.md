@@ -50,7 +50,13 @@ For production deployments on Linux, you can use systemd. See `fastapi.service` 
 
 ## API Endpoints
 
-- `GET /` - Returns a hello world message
+- `GET /` - Returns a hello world message with cat meme info
+- `GET /cat-memes` - List all curated cat memes (20 meme phrases with image URLs)
+- `GET /cat-memes/random` - Get a random cat meme (use `?with_text=false` for plain cat)
+- `GET /cat-memes/custom?text=Your+Text` - Create custom cat meme with your text
+- `GET /cat-memes/{id}` - Get specific cat meme by ID (1-20)
+
+Cat memes are powered by [CATAAS](https://cataas.com/) (Cat as a Service).
 
 ## API Documentation
 
