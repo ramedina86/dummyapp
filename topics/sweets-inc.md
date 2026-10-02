@@ -1,6 +1,6 @@
 # Sweets Inc
 
-Sweets Inc. is a massive American conglomerate of sweet manufacturers.
+Sweets, Inc. is a massive American conglomerate of sweet manufacturers.
 
 Financials:
 - Revenue: $34b per year (2024), $36b per year (2025)
