@@ -3,7 +3,7 @@
 Sweets, Inc. is a massive American conglomerate of sweet manufacturers.
 
 Financials:
-- Revenue: $34b per year (2024), $36b per year (2025)
+- Revenue: $34b per year (2024), $36b per year (2025), $37b per year (2026)
 
 CEO: Mike Martins
 - Age: 44
